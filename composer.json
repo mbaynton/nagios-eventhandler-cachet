@@ -1,0 +1,17 @@
+{
+    "name": "mbaynton_msi/system_status_auto",
+    "description": "Updates status page based on Nagios according to a config file",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mike Baynton",
+            "email": "mbaynton@umn.edu"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "pimple/pimple": "~3.0",
+        "guzzlehttp/guzzle": "~6.0"
+    }
+}
