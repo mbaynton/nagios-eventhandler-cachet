@@ -14,16 +14,9 @@ components:
     nagios_services:
       - host: peacock
         service: PANASAS_REALM_STATUS
-  "Tier 1: High Performance Storage":
-    independent: true # Means it should manage its own incident thread that can happen concurrent with the main incident thread for the component.
-    service_aggregator: worst
-    nagios_services:
-      - host: peacock
-        service: PANASAS_RESPONSE_TIME
-    current_component_status: true # a ServiceStatusInterface implementation
 
 nagios_api:
-  url: https://monitor.msi.umn.edu/nagios/cgi-bin
+  url: https://monitor.my.org/nagios/cgi-bin
   username: abc
   password: def
 
