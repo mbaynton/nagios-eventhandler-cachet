@@ -3,6 +3,7 @@
 
 namespace MSI\system_status_auto;
 
+use GuzzleHttp\Client;
 use MSI\system_status_auto\ServiceAggregator\ServiceAggregatorProvider;
 use Symfony\Component\Yaml\Yaml;
 
@@ -32,6 +33,10 @@ class Container extends \Pimple\Container {
     $this['NagiosStatusGetter'] = function($c) {
       return new NagiosServiceGetterService($c['HttpClient'], $c['config']);
     };
+
+    $this['HttpClient'] = function ($c) {
+      return new Client();
+    };
   }
 
   protected function loadTheConfig() {
@@ -45,7 +50,7 @@ class Container extends \Pimple\Container {
    *
    * @return \MSI\system_status_auto\Container
    */
-  public static function getDefault() {
+  public static function getDefaultContainer() {
     if (self::$default === null) {
       self::$default = new self();
     }

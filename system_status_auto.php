@@ -3,8 +3,10 @@
 
 use \MSI\system_status_auto\Container;
 
-if ($argc != 6) {
-  echo 'Usage: ' . basename(__FILE__) . ' host_name service_name service_state service_state_type host_name' . "\n";
+require 'vendor/autoload.php';
+
+if ($argc != 5) {
+  echo 'Usage: ' . basename(__FILE__) . ' host_name service_name service_state service_state_type' . "\n";
   exit(1);
 }
 
@@ -65,7 +67,7 @@ function nagios_services_exclude_matching($services_array, $host, $service)
 {
   $non_matching_services = array();
   foreach ($services_array as $item) {
-    if ($item->host != $host && $item->service != $service) {
+    if ($item['host'] != $host || $item['service'] != $service) {
       array_push($non_matching_services, $item);
     }
   }
@@ -83,7 +85,7 @@ $cachet_url = $config['cachet_api']['url'];
 $api_key = $config['cachet_api']['api_key'];
 
 $cache_component_lookup = cachet_query('components');
-if ($result['code'] != 200) {
+if ($cache_component_lookup['code'] != 200) {
   echo 'Can\'t query components' . "\n";
   exit(1);
 }
@@ -106,7 +108,7 @@ foreach ($cachet_components as $cachet_component) {
 
   /*Find existing Incidents for the component */
   $incidents_lookup = cachet_query("incidents?component_id=${cachet_component_id}&sort=id&order=desc&per_page=10");
-  if ($result['code'] != 200) {
+  if ($incidents_lookup['code'] != 200) {
     echo 'Can\'t get incidents' . "\n";
     exit(1);
   }
@@ -122,11 +124,12 @@ foreach ($cachet_components as $cachet_component) {
   if ($cachet_incident_id == false) {
     $related_services = $config['components'][$cachet_component]['nagios_services'];
     $related_services = nagios_services_exclude_matching($related_services, $host_name, $service_name);
+    var_dump($related_services);
     /**
      * @var NagiosService[] $related_system_statuses
      */
     $related_system_statuses = $NagiosStatusGetter->getCurrentNagiosStatus($related_services);
-    $current_nagios_service = new NagiosService();
+    $current_nagios_service = new \MSI\system_status_auto\NagiosService();
     $current_nagios_service->host = $host_name;
     $current_nagios_service->service = $service_name;
     $current_nagios_service->status = $service_status;

@@ -7,8 +7,17 @@
         {
             "name": "Mike Baynton",
             "email": "mbaynton@umn.edu"
+        },
+        {
+            "name": "Shrijana Gurung",
+            "email": "shrijana@umn.edu"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "MSI\\system_status_auto\\": "src/"
+        }
+    },
     "minimum-stability": "stable",
     "require": {
         "pimple/pimple": "~3.0",
