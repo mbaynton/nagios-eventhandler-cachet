@@ -3,6 +3,8 @@
 
 namespace MSI\system_status_auto;
 
+use MSI\system_status_auto\ServiceAggregator\ServiceAggregatorProvider;
+
 /**
  * Class Container
  * The DI container.
@@ -21,6 +23,7 @@ class Container extends \Pimple\Container {
 
     // Register services, primarily through delegation to service providers.
     $this['config'] = $this->loadTheConfig();
+    $this->register(new ServiceAggregatorProvider());
     $this->registerServices();
   }
 
