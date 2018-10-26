@@ -83,7 +83,7 @@ if ($result['code'] != 200) {
 	exit(1);
 }
 
-$cache_components = get_affected_cachet_components($host_name);
+$cache_components = get_affected_cachet_components($host_name, $service_name);
 foreach ($cache_components as $cachet_component) {
 	/* Find Cachet component ID */
 
@@ -115,7 +115,7 @@ foreach ($cache_components as $cachet_component) {
 
 	//Update component only if there is no existing incidents
 	if ($cachet_incident_id == false) {
-		$related_services = $config[$cachet_component]['nagios_services'];
+		$related_services = $config['components'][$cachet_component]['nagios_services'];
 		$related_services = nagios_services_exclude_matching($related_services, $host_name, $service_name);
 		/**
 		* @var NagiosService[] $related_system_statuses
@@ -127,11 +127,11 @@ foreach ($cache_components as $cachet_component) {
 		$current_nagios_service->status = $service_status;
 
 		array_push($related_system_statuses, [$current_nagios_service]);
-		$service_aggregator_id = $config[$cachet_component]['service_aggregator'];
+		$service_aggregator_id = $config['components'][$cachet_component]['service_aggregator'];
 		/**
-		* @var ServiceAggregatorInterface $aggregator
+		* @var \MSI\system_status_auto\ServiceAggregator\ServiceAggregatorInterface $aggregator
 		*/
-		$aggregator = $C[$service_aggregator_id];
+		$aggregator = $C['aggregator.' . $service_aggregator_id];
 		$cachet_status = $aggregator->aggregate($related_system_statuses);
 
 		$query = array(
@@ -143,6 +143,7 @@ foreach ($cache_components as $cachet_component) {
 			echo 'Can\'t update component' . "\n";
 			exit(1);
 		}
+    }
 
 	exit(0);
 }
