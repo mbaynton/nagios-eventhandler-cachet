@@ -10,8 +10,10 @@ use MSI\system_status_auto\NagiosService;
  * Calls the cachet service OPERATIONAL if all the nagios services are OK,
  * Calls the cachet service ARTIAL_OUTAGE if 1 - n-1 of the nagios services are not OK,
  * Calls the cachet service MAJOR_OUTAGE if all n of the nagios services are not OK
+ *
+ * Service ID: aggregator.degrade_if_any_fail_if_all
  */
-class DegradeAnyFailAll implements ServiceAggregatorInterface
+class DegradeIfAnyFailIfAll implements ServiceAggregatorInterface
 {
   public function aggregate(array $nagios_services): int
   {

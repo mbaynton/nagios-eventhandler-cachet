@@ -1,7 +1,7 @@
 ---
 components:
   Login Nodes:
-    service_aggregator: degrade_any_fail_all
+    service_aggregator: degrade_if_any_fail_if_all
     nagios_services:
       - host: sfec1
         service: SSH
