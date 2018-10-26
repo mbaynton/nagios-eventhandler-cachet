@@ -32,8 +32,6 @@ function cachet_query($api_part, $action = 'GET', $data = null)
 {
   global $api_key, $cachet_url;
 
-  print_r($data);
-
   $ch = curl_init();
   curl_setopt($ch, CURLOPT_URL, $cachet_url . $api_part);
   curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -124,7 +122,6 @@ foreach ($cachet_components as $cachet_component) {
   if ($cachet_incident_id == false) {
     $related_services = $config['components'][$cachet_component]['nagios_services'];
     $related_services = nagios_services_exclude_matching($related_services, $host_name, $service_name);
-    var_dump($related_services);
     /**
      * @var NagiosService[] $related_system_statuses
      */
@@ -134,7 +131,7 @@ foreach ($cachet_components as $cachet_component) {
     $current_nagios_service->service = $service_name;
     $current_nagios_service->status = $service_status;
 
-    array_push($related_system_statuses, [$current_nagios_service]);
+    array_push($related_system_statuses, $current_nagios_service);
     $service_aggregator_id = $config['components'][$cachet_component]['service_aggregator'];
     /**
      * @var \MSI\system_status_auto\ServiceAggregator\ServiceAggregatorInterface $aggregator
@@ -146,6 +143,7 @@ foreach ($cachet_components as $cachet_component) {
       //'component' => $cachet_component_id,
       'status' => $cachet_status,
     );
+
     $result = cachet_query('components/' . $cachet_component_id, 'PUT', $query);
     if ($result['code'] != 200) {
       echo 'Can\'t update component' . "\n";

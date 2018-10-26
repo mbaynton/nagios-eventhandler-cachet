@@ -70,7 +70,7 @@ class NagiosServiceGetterService
     $pool = new Pool($this->client, $requests, [
       'concurrency' => 4,
       'options'     => $request_options,
-      'fulfilled'   => function ($response, $index) use ($responses) {
+      'fulfilled'   => function ($response, $index) use (&$responses) {
         $responses[] = $response;
       },
       'rejected'    => function ($reason, $index) {
