@@ -31,10 +31,17 @@ class NagiosServiceGetterService
    */
   protected $appConfig;
 
+  /**
+   * @var array $cachetComponentByHostAndServiceLookup
+   */
+  protected $cachetComponentByHostAndServiceLookup;
+
   public function __construct(ClientInterface $client, array $config)
   {
     $this->client = $client;
     $this->appConfig = $config;
+
+    $this->buildCachetComponentByHostAndServiceLookup();
   }
 
   protected function getClient() {
@@ -94,5 +101,21 @@ class NagiosServiceGetterService
     }
 
     return $output;
+  }
+
+  public function getCachetComponentsAffectedByNagiosHostAndService($host, $service) {
+    if (! empty($this->cachetComponentByHostAndServiceLookup[$host][$service])) {
+      return $this->cachetComponentByHostAndServiceLookup[$host][$service];
+    }
+
+    return [];
+  }
+
+  protected function buildCachetComponentByHostAndServiceLookup() {
+    foreach ($this->appConfig['components'] as $component => $componentConfig) {
+      foreach ($componentConfig['nagios_services'] as $nagios_service) {
+        $this->cachetComponentByHostAndServiceLookup[$nagios_service['host']][$nagios_service['service']][] = $component;
+      }
+    }
   }
 }

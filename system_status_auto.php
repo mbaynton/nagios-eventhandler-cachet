@@ -88,8 +88,8 @@ if ($result['code'] != 200) {
   exit(1);
 }
 
-$cache_components = get_affected_cachet_components($host_name, $service_name);
-foreach ($cache_components as $cachet_component) {
+$cachet_components = $NagiosStatusGetter->getCachetComponentsAffectedByNagiosHostAndService($host_name, $service_name);
+foreach ($cachet_components as $cachet_component) {
   /* Find Cachet component ID */
 
   $cachet_component_id = false;
