@@ -73,7 +73,9 @@ function nagios_services_exclude_matching($services_array, $host, $service){
 $C = Container::getDefaultContainer();
 $NagiosStatusGetter = $C['NagiosStatusGetter'];
 
-$config = get_config_file();
+$config = $C['config'];
+$cachet_url = $config['cachet_api']['url'];
+$api_key = $config['cachet_api']['api_key'];
 
 $cache_component_lookup = cachet_query('components');
 if ($result['code'] != 200) {

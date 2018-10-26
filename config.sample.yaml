@@ -22,3 +22,11 @@ components:
         service: PANASAS_RESPONSE_TIME
     current_component_status: true # a ServiceStatusInterface implementation
 
+nagios_api:
+  url: https://monitor.msi.umn.edu/nagios/cgi-bin
+  username: abc
+  password: def
+
+cachet_api:
+  url: http://xxxx.com/api/v1/
+  api_key: xxxx

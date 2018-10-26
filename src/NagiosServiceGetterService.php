@@ -9,6 +9,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -33,6 +34,7 @@ class NagiosServiceGetterService
   public function __construct(ClientInterface $client, array $config)
   {
     $this->client = $client;
+    $this->appConfig = $config;
   }
 
   protected function getClient() {
@@ -40,20 +42,31 @@ class NagiosServiceGetterService
   }
 
   public function get(array $nagiosHostServices) {
-    $url_template = 'https://monitor.msi.umn.edu/nagios/cgi-bin/statusjson.cgi?query=service&hostname=%s&servicedescription=%s&formatoptions=enumerate';
+    $nagios_api_info = $this->appConfig['nagios_api'];
+    $url_template = "${nagios_api_info['url']}/statusjson.cgi?query=service&hostname=%s&servicedescription=%s&formatoptions=enumerate";
+    $request_options = [];
+    if (! empty($nagios_api_info['username']) || ! empty($nagios_api_info['password'])) {
+      $request_options[RequestOptions::AUTH] = [$nagios_api_info['username'], $nagios_api_info['password']];
+    }
+
     $requests = [];
     $responses = [];
 
     foreach ($nagiosHostServices as $hostService) {
-      $requests[] = new Request('GET', sprintf($url_template, $hostService['host'], $hostService['service']));
+      $request = new Request(
+        'GET',
+        sprintf($url_template, $hostService['host'], $hostService['service'])
+      );
+      $requests[] = $request;
     }
 
     $pool = new Pool($this->client, $requests, [
       'concurrency' => 4,
-      'fulfilled' => function ($response, $index) use ($responses) {
+      'options'     => $request_options,
+      'fulfilled'   => function ($response, $index) use ($responses) {
         $responses[] = $response;
       },
-      'rejected' => function ($reason, $index) {
+      'rejected'    => function ($reason, $index) {
         throw new \Exception('Nagios JSON API call failed: ' . $reason);
       }
     ]);
