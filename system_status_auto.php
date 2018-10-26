@@ -4,14 +4,10 @@
 use \MSI\system_status_auto\Container;
 
 if ($argc != 6) {
-	echo 'Usage: ' . basename(__FILE__) . ' cachet_component service_name service_state service_state_type host_name' . "\n";
+	echo 'Usage: ' . basename(__FILE__) . ' host_name service_name service_state service_state_type host_name' . "\n";
 	exit(1);
 }
 
-$cachet_url = 'http://xxxx.com/api/v1/';
-$api_key = 'xxxx';
-
-$incident_prefix = '[Nagios]';
 $cachet_notify_subscribers = true; // Enable subscribers notifcation for incidents creation and updates
 $cachet_incident_visible = true;
 
