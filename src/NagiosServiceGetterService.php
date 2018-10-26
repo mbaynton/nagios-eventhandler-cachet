@@ -41,7 +41,7 @@ class NagiosServiceGetterService
     return $this->client;
   }
 
-  public function get(array $nagiosHostServices) {
+  public function getCurrentNagiosStatus(array $nagiosHostServices) {
     $nagios_api_info = $this->appConfig['nagios_api'];
     $url_template = "${nagios_api_info['url']}/statusjson.cgi?query=service&hostname=%s&servicedescription=%s&formatoptions=enumerate";
     $request_options = [];

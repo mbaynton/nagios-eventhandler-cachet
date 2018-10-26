@@ -71,6 +71,9 @@ function nagios_services_exclude_matching($services_array, $host, $service){
 }
 
 $C = Container::getDefaultContainer();
+/**
+ * @var \MSI\system_status_auto\NagiosServiceGetterService $NagiosStatusGetter
+ */
 $NagiosStatusGetter = $C['NagiosStatusGetter'];
 
 $config = $C['config'];
@@ -120,7 +123,7 @@ foreach ($cache_components as $cachet_component) {
 		/**
 		* @var NagiosService[] $related_system_statuses
 		*/
-		$related_system_statuses = $NagiosStatusGetter->get($related_services);
+		$related_system_statuses = $NagiosStatusGetter->getCurrentNagiosStatus($related_services);
 		$current_nagios_service = new NagiosService();
 		$current_nagios_service->host = $host_name;
 		$current_nagios_service->service = $service_name;
