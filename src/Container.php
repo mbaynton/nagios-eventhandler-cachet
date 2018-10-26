@@ -4,6 +4,7 @@
 namespace MSI\system_status_auto;
 
 use MSI\system_status_auto\ServiceAggregator\ServiceAggregatorProvider;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Class Container
@@ -34,7 +35,9 @@ class Container extends \Pimple\Container {
   }
 
   protected function loadTheConfig() {
+    $parsed_array = Yaml::parseFile('config.yaml');
 
+    return $parsed_array;
   }
 
   /**
