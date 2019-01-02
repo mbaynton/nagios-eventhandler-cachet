@@ -40,9 +40,16 @@ class Container extends \Pimple\Container {
   }
 
   protected function loadTheConfig() {
-    $parsed_array = Yaml::parseFile('config.yaml');
+    $locations = ['nagios_eventhandler_cachet.yaml', '/etc/nagios_eventhandler_cachet.yaml'];
+    foreach($locations as $filename) {
+      if (is_file($filename)) {
+        $parsed_array = Yaml::parseFile($filename);
 
-    return $parsed_array;
+        return $parsed_array;
+      }
+    }
+
+    throw new \RuntimeException('No configuration file found. Create ' . implode(' or ', $locations));
   }
 
   /**

@@ -21,7 +21,7 @@ but is differentiated by:
       * [Install Composer](https://getcomposer.org/download/) if you don't have it.
       
 ## Configuration
-  * Copy `config.sample.yaml` to `config.yaml`.
+  * Copy `config.sample.yaml` to `nagios_eventhandler_cachet.yaml` or `/etc/nagios_eventhandler_cachet.yaml`.
   * Get a Cachet API key:
       * Create a new user in Cachet dashboard
       * login with this user
