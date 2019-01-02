@@ -51,7 +51,7 @@ class NagiosServiceGetterService
   public function getCurrentNagiosStatus(array $nagiosHostServices) {
     $nagios_api_info = $this->appConfig['nagios_api'];
     $url_template = "${nagios_api_info['url']}/statusjson.cgi?query=service&hostname=%s&servicedescription=%s&formatoptions=enumerate";
-    $request_options = [];
+    $request_options = ['connect_timeout' => 5, 'timeout' => 10];
     if (! empty($nagios_api_info['username']) || ! empty($nagios_api_info['password'])) {
       $request_options[RequestOptions::AUTH] = [$nagios_api_info['username'], $nagios_api_info['password']];
     }

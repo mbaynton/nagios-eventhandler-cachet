@@ -28,6 +28,12 @@ define('CACHET_COMPONENT_STATUS_PERFORMANCE_ISSUES', 2);
 define('CACHET_COMPONENT_STATUS_PARTIAL_OUTAGE', 3);
 define('CACHET_COMPONENT_STATUS_MAJOR_OUTAGE', 4);
 
+// This helps avoid piling up lots of these processes if there is a connectivity issue and many nagios events.
+function curl_apply_timeout($ch) {
+  curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+  curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+}
+
 function cachet_query($api_part, $action = 'GET', $data = null)
 {
   global $api_key, $cachet_url;
@@ -36,6 +42,7 @@ function cachet_query($api_part, $action = 'GET', $data = null)
   curl_setopt($ch, CURLOPT_URL, $cachet_url . $api_part);
   curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
   curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+  curl_apply_timeout($ch);
 
   if (in_array($action, array('GET', 'POST', 'PUT'))) {
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $action);
