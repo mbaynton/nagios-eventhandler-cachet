@@ -3,6 +3,7 @@
 
 namespace MSI\system_status_auto;
 
+use Cascade\Cascade;
 use GuzzleHttp\Client;
 use MSI\system_status_auto\ServiceAggregator\ServiceAggregatorProvider;
 use Symfony\Component\Yaml\Yaml;
@@ -31,11 +32,16 @@ class Container extends \Pimple\Container {
 
   protected function registerServices() {
     $this['NagiosStatusGetter'] = function($c) {
-      return new NagiosServiceGetterService($c['HttpClient'], $c['config']);
+      return new NagiosServiceGetterService($c['HttpClient'], $c['logger'], $c['config']);
     };
 
-    $this['HttpClient'] = function ($c) {
+    $this['HttpClient'] = function () {
       return new Client();
+    };
+
+    $this['logger'] = function($c) {
+      Cascade::loadConfigFromArray($c['config']);
+      return Cascade::getLogger('general');
     };
   }
 

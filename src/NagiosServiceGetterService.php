@@ -4,13 +4,16 @@
 namespace MSI\system_status_auto;
 
 
+use Concat\Http\Middleware\Logger as LogMiddleware;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Pool;
-use GuzzleHttp\Promise;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\RequestOptions;
+use Monolog\Logger;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LogLevel;
 
 /**
  * Class NagiosServiceGetterService
@@ -36,10 +39,16 @@ class NagiosServiceGetterService
    */
   protected $cachetComponentByHostAndServiceLookup;
 
-  public function __construct(ClientInterface $client, array $config)
+  /** @var LogMiddleware $logMiddleware */
+  protected $logMiddleware;
+
+  public function __construct(ClientInterface $client, Logger $logger, array $config)
   {
     $this->client = $client;
     $this->appConfig = $config;
+    $this->logMiddleware = new LogMiddleware($logger);
+    $this->logMiddleware->setLogLevel(LogLevel::DEBUG);
+    $this->logMiddleware->setRequestLoggingEnabled(true);
 
     $this->buildCachetComponentByHostAndServiceLookup();
   }
@@ -49,9 +58,12 @@ class NagiosServiceGetterService
   }
 
   public function getCurrentNagiosStatus(array $nagiosHostServices) {
+    $guzzle_stack = HandlerStack::create();
+    $guzzle_stack->push($this->logMiddleware);
+
     $nagios_api_info = $this->appConfig['nagios_api'];
     $url_template = "${nagios_api_info['url']}/statusjson.cgi?query=service&hostname=%s&servicedescription=%s&formatoptions=enumerate";
-    $request_options = ['connect_timeout' => 5, 'timeout' => 10];
+    $request_options = ['handler' => $guzzle_stack, 'connect_timeout' => 5, 'timeout' => 10];
     if (! empty($nagios_api_info['username']) || ! empty($nagios_api_info['password'])) {
       $request_options[RequestOptions::AUTH] = [$nagios_api_info['username'], $nagios_api_info['password']];
     }

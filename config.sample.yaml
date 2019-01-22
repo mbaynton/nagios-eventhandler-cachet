@@ -23,3 +23,18 @@ nagios_api:
 cachet_api:
   url: http://xxxx.com/api/v1/
   api_key: xxxx
+
+loggers:
+  general:
+    handlers: [console, file_handler]
+
+handlers:
+  console:
+    class: Monolog\Handler\StreamHandler
+    level: DEBUG
+    bubble: true
+    stream: php://stdout
+  file_handler:
+    class: Monolog\Handler\StreamHandler
+    level: INFO
+    stream: /var/log/nagios_eventhandler_cachet.log

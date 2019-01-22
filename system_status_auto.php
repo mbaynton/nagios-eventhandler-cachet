@@ -39,7 +39,11 @@ function cachet_query($api_part, $action = 'GET', $data = null)
   global $api_key, $cachet_url;
 
   $ch = curl_init();
+  $log_context = [];
   curl_setopt($ch, CURLOPT_URL, $cachet_url . $api_part);
+  $log_context['url'] = $cachet_url . $api_part;
+  $log_context['method'] = $action;
+
   curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
   curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
   curl_apply_timeout($ch);
@@ -52,6 +56,7 @@ function cachet_query($api_part, $action = 'GET', $data = null)
     $ch_data = http_build_query($data);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $ch_data);
+    $log_context['body'] = $ch_data;
   }
 
   $ch_headers = array(
@@ -61,11 +66,30 @@ function cachet_query($api_part, $action = 'GET', $data = null)
 
   curl_setopt($ch, CURLOPT_HEADER, false); // Don't return headers
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return body
+  $C = Container::getDefaultContainer();
+  $C['logger']->debug('Query to cachet API', $log_context);
   $http_body = curl_exec($ch);
   $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
   curl_close($ch);
 
+  $C['logger']->debug('Response from cachet API', ['code' => $http_code, 'body' => $http_body]);
   return array('code' => $http_code, 'body' => json_decode($http_body));
+}
+
+// Quick/cheap static cache
+function get_cachet_components() {
+  static $components = null;
+
+  if ($components === null) {
+    $C = Container::getDefaultContainer();
+    $components = cachet_query('components');
+    if ($components['code'] != 200) {
+      $C['logger']->critical('Can\'t query cachet components.');
+      exit(1);
+    }
+  }
+
+  return $components;
 }
 
 function nagios_services_exclude_matching($services_array, $host, $service)
@@ -89,17 +113,16 @@ $config = $C['config'];
 $cachet_url = $config['cachet_api']['url'];
 $api_key = $config['cachet_api']['api_key'];
 
-$cache_component_lookup = cachet_query('components');
-if ($cache_component_lookup['code'] != 200) {
-  echo 'Can\'t query components' . "\n";
-  exit(1);
-}
+/** @var \Monolog\Logger $logger */
+$logger = $C['logger'];
+$logger->debug('Incoming raw event: ' . implode(' ', array_splice($argv, 1)), array_splice($argv, 1));
 
 $cachet_components = $NagiosStatusGetter->getCachetComponentsAffectedByNagiosHostAndService($host_name, $service_name);
 foreach ($cachet_components as $cachet_component) {
   /* Find Cachet component ID */
 
   $cachet_component_id = false;
+  $cache_component_lookup = get_cachet_components();
   foreach ($cache_component_lookup['body']->data as $component) {
     if ($cachet_component == $component->name) { // We nailed it
       $cachet_component_id = $component->id;
@@ -108,20 +131,22 @@ foreach ($cachet_components as $cachet_component) {
   }
   if ($cachet_component_id === false) {
     echo 'Can\'t find component "' . $cachet_component . '"' . "\n";
+    $logger->critical("Cachet component \"${cachet_component}\" referenced in configuration does not exist on your cachet installation.");
     exit(1);
   }
 
   /*Find existing Incidents for the component */
   $incidents_lookup = cachet_query("incidents?component_id=${cachet_component_id}&sort=id&order=desc&per_page=10");
   if ($incidents_lookup['code'] != 200) {
-    echo 'Can\'t get incidents' . "\n";
-    exit(1);
+    $logger->critical("Failure checking for existing Incidents for component ${cachet_component}.");
+    continue;
   }
   $cachet_incident_id = false;
   foreach ($incidents_lookup['body']->data as $incident) {
     if ($incident->status != CACHET_STATUS_FIXED) {
       $cachet_incident_id = $incident->id;
-      break; // Yes, bad.
+      $logger->notice("Component \"${cachet_component}\" has open Incidents: will not automatically change.");
+      break;
     }
   }
 
@@ -129,6 +154,11 @@ foreach ($cachet_components as $cachet_component) {
   if ($cachet_incident_id == false) {
     $related_services = $config['components'][$cachet_component]['nagios_services'];
     $related_services = nagios_services_exclude_matching($related_services, $host_name, $service_name);
+    $logger->info("Status change of ${service_name} on ${host_name} may affect status of component \"${cachet_component}.");
+    $related_services_count = count($related_services);
+    if ($related_services_count > 0) {
+      $logger->info("Querying nagios for status of ${related_services_count} dependent services.", $related_services);
+    }
     /**
      * @var NagiosService[] $related_system_statuses
      */
@@ -153,12 +183,11 @@ foreach ($cachet_components as $cachet_component) {
 
     $result = cachet_query('components/' . $cachet_component_id, 'PUT', $query);
     if ($result['code'] != 200) {
-      echo 'Can\'t update component' . "\n";
-      exit(1);
+      $logger->critical("Failure updating status of component \"${cachet_component}\" (${cachet_component_id})");
+    } else {
+      $logger->notice("Component ${cachet_component} (${cachet_component_id}) status set to ${cachet_status}.");
     }
   }
-
-  exit(0);
 }
 
 
