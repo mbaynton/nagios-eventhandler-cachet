@@ -166,7 +166,7 @@ foreach ($cachet_components as $cachet_component) {
     $current_nagios_service = new \MSI\system_status_auto\NagiosService();
     $current_nagios_service->host = $host_name;
     $current_nagios_service->service = $service_name;
-    $current_nagios_service->status = $service_status;
+    $current_nagios_service->status = strtolower($service_status);
 
     array_push($related_system_statuses, $current_nagios_service);
     $service_aggregator_id = $config['components'][$cachet_component]['service_aggregator'];
