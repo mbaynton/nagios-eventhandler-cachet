@@ -12,5 +12,8 @@ class ServiceAggregatorProvider implements ServiceProviderInterface {
     $pimple['aggregator.degrade_if_any_fail_if_all'] = function($c) {
       return new DegradeIfAnyFailIfAll();
     };
+    $pimple['aggregator.degrade_if_any'] = function($c) {
+      return new DegradeIfAny();
+    };
   }
 }
