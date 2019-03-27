@@ -143,9 +143,9 @@ foreach ($cachet_components as $cachet_component) {
   }
   $cachet_incident_id = false;
   foreach ($incidents_lookup['body']->data as $incident) {
-    if ($incident->status != CACHET_STATUS_FIXED) {
+    if ($incident->stickied) {
       $cachet_incident_id = $incident->id;
-      $logger->notice("Component \"${cachet_component}\" has open Incidents: will not automatically change.");
+      $logger->notice("Component \"${cachet_component}\" has stickied Incidents: will not automatically change.");
       break;
     }
   }
