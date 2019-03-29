@@ -12,8 +12,15 @@ but is differentiated by:
     behind a load balancer that performs the same task, for example.
   * A mechanism to allow operators to manually pin a component on your status page to a
     given status, in cases where your nagios checks are incorrect. To do this, simply
-    open an incident for a component. As long as a component has an open (not "fixed") incident,
-    this script will not change the status of the component.
+    open an incident for a component and mark it "stickied." As long as a component has
+    a stickied incident, this script will not change the status of the component or close
+    out the incident.
+  * Limited interaction with related incidents:  
+    If a component is automatically marked as having an issue, and then an operator
+    subsequently opens an incident about that component to provide people with more
+    information about the issue and does not mark that incident as "stickied", then
+    whenever the component gets set back to Operational, the incident will also
+    automatically be marked as fixed.
 
 ## Installation
   * Clone this repository into a new directory  
