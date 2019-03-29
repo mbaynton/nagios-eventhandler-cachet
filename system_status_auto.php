@@ -141,17 +141,22 @@ foreach ($cachet_components as $cachet_component) {
     $logger->critical("Failure checking for existing Incidents for component ${cachet_component}.");
     continue;
   }
-  $cachet_incident_id = false;
+  $stickied_cachet_incident_id = false;
+  $open_incidents = [];
   foreach ($incidents_lookup['body']->data as $incident) {
     if ($incident->stickied) {
-      $cachet_incident_id = $incident->id;
+      $stickied_cachet_incident_id = $incident->id;
       $logger->notice("Component \"${cachet_component}\" has stickied Incidents: will not automatically change.");
       break;
     }
+
+    if ($incident->status != CACHET_STATUS_FIXED) {
+      $open_incidents[] = $incident;
+    }
   }
 
-  //Update component only if there is no existing incidents
-  if ($cachet_incident_id == false) {
+  //Update component and open incidents only if there is no stickied incident
+  if ($stickied_cachet_incident_id == false) {
     $related_services = $config['components'][$cachet_component]['nagios_services'];
     $related_services = nagios_services_exclude_matching($related_services, $host_name, $service_name);
     $logger->info("Status change of ${service_name} on ${host_name} may affect status of component \"${cachet_component}.");
@@ -183,9 +188,24 @@ foreach ($cachet_components as $cachet_component) {
 
     $result = cachet_query('components/' . $cachet_component_id, 'PUT', $query);
     if ($result['code'] != 200) {
-      $logger->critical("Failure updating status of component \"${cachet_component}\" (${cachet_component_id})");
+      $logger->critical("Failure updating status of component \"${cachet_component}\" (#${cachet_component_id})");
     } else {
       $logger->notice("Component ${cachet_component} (${cachet_component_id}) status set to ${cachet_status}.");
+    }
+
+    if ($cachet_status == CACHET_STATUS_FIXED) {
+      // Also mark any open, non-stickied incidents related to the component as fixed.
+      $query = [
+          'component_status' => $cachet_status,
+      ];
+      foreach ($open_incidents as $incident) {
+        $result = cachet_query('incidents/' . $incident->id, 'PUT', $query);
+        if ($result['code'] != 200) {
+          $logger->critical("Failure updating status of incident \"{$incident->name}\" (#{$incident->id})");
+        } else {
+          $logger->notice("Component ${cachet_component} (${cachet_component_id}) status set to ${cachet_status}.");
+        }
+      }
     }
   }
 }
