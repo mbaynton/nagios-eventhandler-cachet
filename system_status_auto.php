@@ -193,17 +193,18 @@ foreach ($cachet_components as $cachet_component) {
       $logger->notice("Component ${cachet_component} (${cachet_component_id}) status set to ${cachet_status}.");
     }
 
-    if ($cachet_status == CACHET_STATUS_FIXED) {
+    if ($cachet_status == CACHET_COMPONENT_STATUS_OPERATIONAL) {
       // Also mark any open, non-stickied incidents related to the component as fixed.
       $query = [
-          'component_status' => $cachet_status,
+        'component_status' => $cachet_status,
+        'status' => CACHET_STATUS_FIXED
       ];
       foreach ($open_incidents as $incident) {
         $result = cachet_query('incidents/' . $incident->id, 'PUT', $query);
         if ($result['code'] != 200) {
           $logger->critical("Failure updating status of incident \"{$incident->name}\" (#{$incident->id})");
         } else {
-          $logger->notice("Component ${cachet_component} (${cachet_component_id}) status set to ${cachet_status}.");
+          $logger->notice("Incident \"{$incident->name}\" (#{$incident->id}) status set to fixed.");
         }
       }
     }
