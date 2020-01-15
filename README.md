@@ -33,9 +33,9 @@ but is differentiated by:
       * Create a new user in Cachet dashboard
       * login with this user
       * get the API key in his profile.
-  * Update `config.yaml` to contain the url to your cachet server's API and the API key from above.
+  * Update `nagios_eventhandler_cachet.yaml` to contain the url to your cachet server's API and the API key from above.
       * These go in `cachet_api/url` and `cachet_api/api_key`.
-  * Update `config.yaml` to contain the url to your nagios server's json cgi endpoints, and optionally an http username
+  * Update `nagios_eventhandler_cachet.yaml` to contain the url to your nagios server's json cgi endpoints, and optionally an http username
     and password if your nagios instance is protected by some form of HTTP authentication. 
       * These go in `nagios_api/url` and optionally `nagios_api/username` and `nagios_api/password`.
       
@@ -66,7 +66,7 @@ In this sample,
      services are ok, Major Outage if all of the nagios services are not ok, and Partial
      Outage if some of the nagios services are not ok.
      * Other logic can be added / used instead. The currently available values for
-     `service_aggregator` are defined in [this source file](https://github.umn.edu/mbaynton/nagios-eventhandler-cachet/blob/master/src/ServiceAggregator/ServiceAggregatorProvider.php).
+     `service_aggregator` are defined in [this source file](https://github.com/mbaynton/nagios-eventhandler-cachet/blob/master/src/ServiceAggregator/ServiceAggregatorProvider.php).
      
 ## Try it out
 Set up at least one Cachet `component` and its underlying `nagios_services` in your config file.
@@ -74,4 +74,4 @@ Then, run
 ```
 ./system_status_auto.php '[hostname]' '[service name]' CRITICAL HARD
 ```
-where `[hostname]` matches a `host:` line in your config file and `service:` matches a service.
+where `[hostname]` matches a `host:` line in your config file and `[service name]` matches a `service:`.
